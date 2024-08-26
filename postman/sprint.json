@@ -1312,7 +1312,7 @@
 						"header": [
 							{
 								"key": "X-Sharer-User-Id",
-								"value": "3",
+								"value": "{{userId}}",
 								"type": "text"
 							},
 							{
@@ -1364,7 +1364,7 @@
 						"header": [
 							{
 								"key": "X-Sharer-User-Id",
-								"value": "3",
+								"value": "{{userId}}",
 								"type": "text"
 							},
 							{
@@ -2112,7 +2112,7 @@
 						"header": [
 							{
 								"key": "X-Sharer-User-Id",
-								"value": "3",
+								"value": "{{userId}}",
 								"type": "text"
 							},
 							{
@@ -2296,7 +2296,7 @@
 						"header": [
 							{
 								"key": "X-Sharer-User-Id",
-								"value": "1",
+								"value": "{{userId}}",
 								"type": "text"
 							},
 							{
@@ -2397,7 +2397,7 @@
 						"header": [
 							{
 								"key": "X-Sharer-User-Id",
-								"value": "1",
+								"value": "{{userId}}",
 								"type": "text"
 							},
 							{
@@ -2451,7 +2451,7 @@
 						"header": [
 							{
 								"key": "X-Sharer-User-Id",
-								"value": "1",
+								"value": "{{userId}}",
 								"type": "text"
 							},
 							{
