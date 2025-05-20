@@ -26,7 +26,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public UserDto getUserById(Long id) {
         return Optional.ofNullable(users.get(id))
-                .map(UserMapper :: mapUserDto)
+                .map(UserMapper::mapUserDto)
                 .orElseThrow(() -> new NotFoundException("Не найден пользователь с таким id: " + id));
     }
 

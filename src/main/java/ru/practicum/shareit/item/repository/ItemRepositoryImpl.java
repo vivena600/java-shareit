@@ -26,7 +26,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public ItemDto getItemById(Long itemId) {
         return Optional.ofNullable(items.get(itemId))
-                .map(ItemMapper :: mapItemDto)
+                .map(ItemMapper::mapItemDto)
                 .orElseThrow(() -> new NotFoundException("Не найдена вещь с id: " + itemId));
     }
 
@@ -52,7 +52,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public List<ItemDto> getUserItems(User user) {
         return items.values().stream()
                 .filter(item -> item.getOwner().equals(user))
-                .map(ItemMapper :: mapItemDto)
+                .map(ItemMapper::mapItemDto)
                 .toList();
     }
 
@@ -65,7 +65,7 @@ public class ItemRepositoryImpl implements ItemRepository {
                         item.getName() != null && (
                                 item.getName().toLowerCase().contains(finalText) ||
                                 item.getDescription().toLowerCase().contains(finalText)))
-                .map(ItemMapper :: mapItemDto)
+                .map(ItemMapper::mapItemDto)
                 .toList();
     }
 
