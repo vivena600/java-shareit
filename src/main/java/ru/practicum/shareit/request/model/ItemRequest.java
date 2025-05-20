@@ -1,22 +1,20 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.request.model;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
-public class Item {
+public class ItemRequest {
     private Long id;
-
-    @NotBlank
-    private String name;
 
     @NotBlank
     private String description;
 
-    private String available;
-    private User owner;
-    private String request;
+    private User requestor;
+    private LocalDateTime created;
 }
