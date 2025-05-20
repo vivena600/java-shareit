@@ -49,7 +49,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItems(Long userId, String text) {
-        User owner = getOwner(userId);
+        getOwner(userId); //выполняет проверку, существует ли такой пользователь или нте
         if (text.isEmpty()) {
             return new ArrayList<ItemDto>();
         }
