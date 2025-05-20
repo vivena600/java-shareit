@@ -1,13 +1,12 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.user.model.User;
 
 @Data
 @Builder
-public class Item {
+public class ItemDto {
     private Long id;
 
     @NotBlank
@@ -17,6 +16,6 @@ public class Item {
     private String description;
 
     private String available;
-    private User owner;
+
     private String request;
 }

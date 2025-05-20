@@ -1,15 +1,15 @@
-package ru.practicum.shareit.request.dto;
+package ru.practicum.shareit.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class ItemRequestDto {
+public class ItemRequest {
     private Long id;
 
     @NotBlank
