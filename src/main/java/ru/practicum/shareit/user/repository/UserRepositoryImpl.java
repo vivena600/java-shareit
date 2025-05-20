@@ -56,7 +56,6 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void deleteUser(Long id) {
-        //TODO - добавить проверку есть ли пользователь с таким id
         users.remove(id);
     }
 

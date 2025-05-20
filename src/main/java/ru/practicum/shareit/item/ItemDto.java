@@ -3,6 +3,8 @@ package ru.practicum.shareit.item;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.user.User;
 
 @Data
 @Builder
@@ -15,7 +17,7 @@ public class ItemDto {
     @NotBlank
     private String description;
 
-    private String available;
-
-    private String request;
+    private Boolean available;
+    private User owner;
+    private ItemRequest request;
 }
