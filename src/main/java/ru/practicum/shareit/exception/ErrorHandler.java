@@ -26,4 +26,11 @@ public class ErrorHandler {
         log.error("Параметр не прошел проверку: {}", ex.getMessage());
         return Map.of("error validation", ex.getMessage());
     }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleAllExceptions(final Exception ex) {
+        log.error("Внутренняя ошибка сервера: {}", ex.getMessage(), ex);
+        return Map.of("Произошла непредвиденная ошибка", ex.getMessage());
+    }
 }
