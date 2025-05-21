@@ -7,13 +7,13 @@ import lombok.Data;
 
 @Data
 @Builder
-public class User {
+public class UserDto {
     private Long id;
 
-    @NotBlank(message = "Не указано имя пользователя")
+    @NotBlank
     private String name;
 
-    @Email(message = "Не корректная почта")
-    @NotBlank(message = "Не указан email пользователя")
+    @Email
+    @NotBlank
     private String email;
 }
