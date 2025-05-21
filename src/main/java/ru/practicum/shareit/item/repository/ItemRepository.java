@@ -7,13 +7,13 @@ import ru.practicum.shareit.user.User;
 import java.util.List;
 
 public interface ItemRepository {
-    ItemDto createItem(Item item);
+    Item createItem(Item item);
 
-    ItemDto getItemById(Long itemId);
+    Item getItemById(Long itemId);
 
-    ItemDto updateItem(Long itemId, Item item);
+    Item updateItem(Long itemId, Item item);
 
-    List<ItemDto> getUserItems(User user);
+    List<Item> getUserItems(User user);
 
-    List<ItemDto> searchItems(String text);
+    List<Item> searchItems(String text);
 }

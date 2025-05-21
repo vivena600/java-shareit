@@ -3,8 +3,6 @@ package ru.practicum.shareit.item.repository;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.user.User;
 
 import java.util.HashMap;
@@ -17,22 +15,21 @@ public class ItemRepositoryImpl implements ItemRepository {
     private final Map<Long, Item> items = new HashMap<>();
 
     @Override
-    public ItemDto createItem(Item item) {
+    public Item createItem(Item item) {
         item.setId(getNextId());
         items.put(item.getId(), item);
-        return ItemMapper.mapItemDto(item);
+        return item;
     }
 
     @Override
-    public ItemDto getItemById(Long itemId) {
+    public Item getItemById(Long itemId) {
         return Optional.ofNullable(items.get(itemId))
-                .map(ItemMapper::mapItemDto)
                 .orElseThrow(() -> new NotFoundException("Не найдена вещь с id: " + itemId));
     }
 
     @Override
-    public ItemDto updateItem(Long itemId, Item item) {
-        ItemDto oldItem = getItemById(itemId);
+    public Item updateItem(Long itemId, Item item) {
+        Item oldItem = getItemById(itemId);
 
         if (item.getDescription() != null && !item.getDescription().equals(oldItem.getDescription())) {
             oldItem.setDescription(item.getDescription());
@@ -49,15 +46,14 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<ItemDto> getUserItems(User user) {
+    public List<Item> getUserItems(User user) {
         return items.values().stream()
                 .filter(item -> item.getOwner().equals(user))
-                .map(ItemMapper::mapItemDto)
                 .toList();
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
+    public List<Item> searchItems(String text) {
         text = text.toLowerCase();
         String finalText = text;
         return items.values().stream()
@@ -65,7 +61,6 @@ public class ItemRepositoryImpl implements ItemRepository {
                         item.getName() != null && (
                                 item.getName().toLowerCase().contains(finalText) ||
                                 item.getDescription().toLowerCase().contains(finalText)))
-                .map(ItemMapper::mapItemDto)
                 .toList();
     }
 

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
@@ -15,22 +16,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAllUsers() {
-        return repository.getAllUsers();
+        return repository.getAllUsers()
+                .stream().map(UserMapper::mapUserDto)
+                .toList();
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        return repository.getUserById(id);
+        return UserMapper.mapUserDto(repository.getUserById(id));
     }
 
     @Override
-    public UserDto createUser(User user) {
-        return repository.createUser(user);
+    public UserDto createUser(UserDto user) {
+        User userEntity = UserMapper.mapUser(user);
+        return UserMapper.mapUserDto(repository.createUser(userEntity));
     }
 
     @Override
-    public UserDto updateUser(User user) {
-        return repository.updateUser(user);
+    public UserDto updateUser(UserDto user) {
+        User userEntity = UserMapper.mapUser(user);
+        return UserMapper.mapUserDto(repository.updateUser(userEntity));
     }
 
     @Override

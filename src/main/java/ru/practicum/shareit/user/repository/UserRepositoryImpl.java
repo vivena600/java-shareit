@@ -4,9 +4,7 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,30 +15,28 @@ public class UserRepositoryImpl implements UserRepository {
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public List<UserDto> getAllUsers() {
+    public List<User> getAllUsers() {
         return users.values().stream()
-                .map(UserMapper::mapUserDto)
                 .toList();
     }
 
     @Override
-    public UserDto getUserById(Long id) {
+    public User getUserById(Long id) {
         return Optional.ofNullable(users.get(id))
-                .map(UserMapper::mapUserDto)
                 .orElseThrow(() -> new NotFoundException("Не найден пользователь с таким id: " + id));
     }
 
     @Override
-    public UserDto createUser(User user) {
+    public User createUser(User user) {
         checkEmail(user.getEmail());
         user.setId(getNextId());
         users.put(user.getId(), user);
-        return UserMapper.mapUserDto(user);
+        return user;
     }
 
     @Override
-    public UserDto updateUser(User user) {
-        UserDto oldUser = getUserById(user.getId());
+    public User updateUser(User user) {
+        User oldUser = getUserById(user.getId());
 
         if (user.getEmail() != null && !oldUser.getEmail().equals(user.getEmail())) {
             checkEmail(user.getEmail());
