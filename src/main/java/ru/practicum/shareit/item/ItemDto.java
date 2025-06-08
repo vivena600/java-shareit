@@ -21,6 +21,6 @@ public class ItemDto {
     @NotNull(message = "Не заполнен статус аренды")
     private Boolean available;
 
-    private User owner;
-    private ItemRequest request;
+    private Long owner;
+//    private Long request;
 }
