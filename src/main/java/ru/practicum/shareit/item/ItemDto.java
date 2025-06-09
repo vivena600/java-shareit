@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.User;
 
 @Data
 @Builder
@@ -22,5 +20,6 @@ public class ItemDto {
     private Boolean available;
 
     private Long owner;
-//    private Long request;
+
+    //private Long request;
 }

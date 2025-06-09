@@ -27,7 +27,7 @@ public class ItemServiceImpl implements ItemService {
         log.info("Пользователь с id = {} создает вещь {}", userId, item);
         User user = getOwner(userId);
         Item itemEntity = ItemMapper.mapItem(item, user);
-        itemEntity.setOwner(getOwner(userId));
+        //itemEntity.setOwner(getOwner(userId));
         return ItemMapper.mapItemDto(itemRepository.save(itemEntity));
     }
 

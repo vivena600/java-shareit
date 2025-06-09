@@ -67,4 +67,11 @@ public class ItemController {
             @RequestParam("text") String text) {
         return itemService.searchItems(userId, text);
     }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createdComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                     @PathVariable @Positive Long itemId,
+                                     @RequestBody CommentDto comment) {
+        return null;
+    }
 }
