@@ -6,12 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -77,6 +81,40 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.mapBookingResponseDto(booking);
     }
 
+    @Override
+    public List<BookingResponseDto> getBookingByState(Long userId, String state) {
+        BookingState bookingState = checkState(state);
+        User user = getUser(userId);
+        LocalDateTime currentTime = LocalDateTime.now();
+        List<Booking> bookings = switch (bookingState) {
+            case WAITING -> repository.getBookingByStateStatus(userId, BookingStatus.WAITING);
+            case REJECTED -> repository.getBookingByStateStatus(userId, BookingStatus.REJECTED);
+            case CURRENT -> repository.getBookingByStateCurrent(userId, currentTime);
+            case PAST -> repository.getBookingByStatePast(userId, currentTime);
+            case FUTURE -> repository.getBookingByStateFuture(userId, currentTime);
+            default -> repository.getBookingByStateALL(userId);
+        };
+
+        return BookingMapper.mapListBookingResponseDto(bookings);
+    }
+
+    @Override
+    public List<BookingResponseDto> getBookingsAllItemsByState(String state, Long userId) {
+        BookingState bookingState = checkState(state);
+        User user = getUser(userId);
+        LocalDateTime currentTime = LocalDateTime.now();
+        List<Booking> bookings = switch (bookingState) {
+            case WAITING -> repository.getBookingAllItemsByStateStatus(userId, BookingStatus.WAITING);
+            case REJECTED -> repository.getBookingAllItemsByStateStatus(userId, BookingStatus.REJECTED);
+            case CURRENT -> repository.getBookingAllItemsByStateCurrent(userId, currentTime);
+            case PAST -> repository.getBookingAllItemsByStatePast(userId, currentTime);
+            case FUTURE -> repository.getBookingAllItemsByStateFuture(userId, currentTime);
+            default -> repository.getBookingAllItemsByStateALL(userId);
+        };
+
+        return BookingMapper.mapListBookingResponseDto(bookings);
+    }
+
     private User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Не удалось найти пользователя с id:" + userId));
@@ -90,5 +128,13 @@ public class BookingServiceImpl implements BookingService {
     private Booking checkBooking(Long bookingId) {
         return repository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Не удалось найти бронь с id:" + bookingId));
+    }
+
+    private BookingState checkState(String state) {
+        try {
+            return BookingState.valueOf(state.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Не существует состояния " + state);
+        }
     }
 }

@@ -66,8 +66,20 @@ public class BookingController {
      * Headers X-Sharer-User-Id
      */
     @GetMapping()
-    public List<BookingDto> getBookingsByState(@RequestParam("state") String state,
+    public List<BookingResponseDto> getBookingsByState(@RequestParam(name = "state", defaultValue = "ALL") String state,
             @RequestHeader("X-Sharer-User-Id") Long userId) {
-        return null;
+        return bookingService.getBookingByState(userId, state);
+    }
+
+    /**
+     * Получение списка броней всех вещей пользователя,
+     * Список отсортированы по дату в порядке убывания
+     * GET /bookings/owner?state={state}
+     * Headers X-Sharer-User-Id
+     */
+    @GetMapping("/owner")
+    public List<BookingResponseDto> getBookingsAllItemsByState(@RequestParam(name = "state", defaultValue = "ALL") String state,
+                                               @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return bookingService.getBookingsAllItemsByState(state, userId);
     }
 }
