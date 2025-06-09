@@ -28,7 +28,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto createdComment(Long userId, Long itemId, CommentDto commentDto) {
-        log.info("Создание комментария от пользователя {} на вещь {}", userId, itemId );
+        log.info("Создание комментария от пользователя {} на вещь {}", userId, itemId);
         User user = checkUser(userId);
         Item item = checkItem(itemId);
         checkBooking(itemId, user.getId());

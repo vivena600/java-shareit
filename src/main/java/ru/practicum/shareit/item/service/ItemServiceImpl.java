@@ -70,8 +70,8 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemWithCommentDto> getUserItems(Long userId) {
         log.info("Запрос на получение вещей пользователя с id {}", userId);
         return itemRepository.findByOwner(getOwner(userId)).stream()
-                .map(item -> ItemMapper.
-                        toItemWithCommentDto(item,
+                .map(item -> ItemMapper
+                        .toItemWithCommentDto(item,
                                 CommentMapper.mapListCommentDto(commentRepository.findCommentsByItemId(item.getId()))))
                 .toList();
     }
