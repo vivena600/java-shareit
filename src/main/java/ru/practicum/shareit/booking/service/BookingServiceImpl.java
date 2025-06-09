@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
@@ -64,8 +65,16 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto getBooking(Long bookingId) {
-        return null;
+    public BookingResponseDto getBooking(Long userId, Long bookingId) {
+        Booking booking = checkBooking(bookingId);
+        Item item = checkItem(booking.getItem().getId());
+
+        if (!booking.getBooker().getId().equals(userId) && !item.getOwner().getId().equals(userId)) {
+            throw new ValidationException("Пользователь с id " + userId + " не может просматривать информации о " +
+                    "бронировании");
+        }
+
+        return BookingMapper.mapBookingResponseDto(booking);
     }
 
     private User getUser(Long userId) {

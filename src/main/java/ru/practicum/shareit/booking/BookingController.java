@@ -50,12 +50,24 @@ public class BookingController {
 
     /**
      * Получение информации о бронировании.
-     * Post /bookings/bookingId
+     * Get /bookings/bookingId
      * Headers X-Sharer-User-Id
      */
     @GetMapping("/{bookingId}")
-    public List<BookingDto> getBookings(@PathVariable("bookingId") Long bookingId,
+    public BookingResponseDto getBookingById(@PathVariable("bookingId") Long bookingId,
                                         @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return bookingService.getBooking(userId, bookingId);
+    }
+
+    /**
+     * Получение списка броней с определенным состоянием,
+     * Список отсортированы по дату в порядке убывания
+     * GET /bookings?state={state}
+     * Headers X-Sharer-User-Id
+     */
+    @GetMapping()
+    public List<BookingDto> getBookingsByState(@RequestParam("state") String state,
+            @RequestHeader("X-Sharer-User-Id") Long userId) {
         return null;
     }
 }

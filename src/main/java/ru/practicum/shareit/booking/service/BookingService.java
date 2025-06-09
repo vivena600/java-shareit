@@ -11,5 +11,5 @@ public interface BookingService {
 
     BookingResponseDto canceledBooking(Long userId, Long bookingId);
 
-    BookingDto getBooking(Long bookingId);
+    BookingResponseDto getBooking(Long userId, Long bookingId);
 }
