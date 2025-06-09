@@ -7,7 +7,7 @@ public interface BookingService {
 
     public BookingResponseDto createBooking(Long userId, BookingDto bookingDto);
 
-    BookingDto approveBooking(Long userId, Long bookingId, Boolean approved);
+    BookingResponseDto approveBooking(Long userId, Long bookingId, Boolean approved);
 
     BookingDto getBooking(Long bookingId);
 }

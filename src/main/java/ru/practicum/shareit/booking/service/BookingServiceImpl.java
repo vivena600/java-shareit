@@ -34,8 +34,20 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto approveBooking(Long userId, Long bookingId, Boolean approved) {
-        return null;
+    public BookingResponseDto approveBooking(Long userId, Long bookingId, Boolean approved) {
+        Booking booking = checkBooking(bookingId);
+
+        if (booking.getStatus() != BookingStatus.WAITING) {
+            throw new ValidationException("Статус бронирования уже изменен");
+        }
+
+        Item item = checkItem(booking.getItem().getId());
+        if (!item.getOwner().getId().equals(userId)) {
+            throw new ValidationException("Пользователь с id " + userId + " не может редактировать статус этой вещи");
+        }
+
+        booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+        return BookingMapper.mapBookingResponseDto(repository.save(booking));
     }
 
     @Override
@@ -49,8 +61,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Item checkItem(Long itemId) {
-        Item item = itemRepository.findById(itemId)
+        return itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Не удалось найти вещь с id:" + itemId));
-        return item;
+    }
+
+    private Booking checkBooking(Long bookingId) {
+        return repository.findById(bookingId)
+                .orElseThrow(() -> new NotFoundException("Не удалось найти бронь с id:" + bookingId));
     }
 }

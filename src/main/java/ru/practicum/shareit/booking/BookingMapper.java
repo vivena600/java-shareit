@@ -61,6 +61,7 @@ public class BookingMapper {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
+                .owner(item.getOwner().getId())
                 .build();
     }
 }

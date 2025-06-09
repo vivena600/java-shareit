@@ -27,14 +27,14 @@ public class BookingController {
 
     /**
      * Изменение состояния брони.
-     * Post /bookings/bookingId?approved
+     * Patch /bookings/bookingId?approved
      * Headers X-Sharer-User-Id
      */
     @PatchMapping("/{bookingId}")
-    public BookingDto approveBooking(@PathVariable("bookingId") Long bookingId,
+    public BookingResponseDto approveBooking(@PathVariable("bookingId") Long bookingId,
                                      @RequestParam("approved") Boolean approved,
                                      @RequestHeader("X-Sharer-User-Id") Long userId) {
-        return null;
+        return bookingService.approveBooking(userId, bookingId, approved);
     }
 
     /**
