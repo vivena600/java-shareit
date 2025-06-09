@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository repository;
     private final UserRepository userRepository;
@@ -26,6 +28,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto createdComment(Long userId, Long itemId, CommentDto commentDto) {
+        log.info("Создание комментария от пользователя {} на вещь {}", userId, itemId );
         User user = checkUser(userId);
         Item item = checkItem(itemId);
         checkBooking(itemId, user.getId());

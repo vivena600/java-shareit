@@ -41,6 +41,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDto approveBooking(Long userId, Long bookingId, Boolean approved) {
+        log.info("Пользователь с id {} изменяет статус брони {}", userId, bookingId);
         Booking booking = checkBooking(bookingId);
 
         if (booking.getStatus() != BookingStatus.WAITING) {
@@ -58,6 +59,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDto canceledBooking(Long userId, Long bookingId) {
+        log.info("Пользователь с id {} отменяет бронь {}", userId, bookingId);
         Booking booking = checkBooking(bookingId);
 
         if (!booking.getBooker().getId().equals(userId)) {
