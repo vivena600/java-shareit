@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.*;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
@@ -101,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingResponseDto> getBookingsAllItemsByState(String state, Long userId) {
         BookingState bookingState = checkState(state);
-        User user = getUser(userId);
+        getUser(userId);
         LocalDateTime currentTime = LocalDateTime.now();
         List<Booking> bookings = switch (bookingState) {
             case WAITING -> repository.getBookingAllItemsByStateStatus(userId, BookingStatus.WAITING);

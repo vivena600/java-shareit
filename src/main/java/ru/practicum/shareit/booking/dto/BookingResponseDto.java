@@ -1,10 +1,8 @@
 package ru.practicum.shareit.booking.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.item.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.UserDto;
 
 import java.time.LocalDateTime;

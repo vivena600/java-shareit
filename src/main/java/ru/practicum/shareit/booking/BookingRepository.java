@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.enums.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -111,4 +112,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "ORDER BY b.start DESC")
     List<Booking> getBookingAllItemsByStatePast(@Param("id") Long id,
                                         @Param("currentTime")LocalDateTime currentTime);
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "JOIN FETCH b.item i " +
+            "JOIN FETCH i.owner " +
+            "WHERE b.booker.id = :user AND i.id = :item " +
+            "AND b.status = 'APPROVED' " +
+            "AND b.end <= :currentTime " +
+            "ORDER BY b.start DESC")
+    Optional<Booking> getPostBooking(@Param("item") Long item,
+                                 @Param("user") Long user,
+                                 @Param("currentTime")LocalDateTime currentTime);
 }

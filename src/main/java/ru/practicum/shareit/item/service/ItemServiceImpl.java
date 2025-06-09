@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithCommentDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -21,6 +21,7 @@ import java.util.List;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto createItem(Long userId, ItemDto item) {
@@ -57,18 +58,21 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItem(Long itemId) {
+    public ItemWithCommentDto getItem(Long itemId) {
         log.info("Запрос на получение вещи с id {}", itemId);
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Не удается найти вещь с id " + itemId));
-        return ItemMapper.mapItemDto(item);
+        List<CommentDto> comment = CommentMapper.mapListCommentDto(commentRepository.findCommentsByItemId(itemId));
+        return ItemMapper.toItemWithCommentDto(item, comment);
     }
 
     @Override
-    public List<ItemDto> getUserItems(Long userId) {
+    public List<ItemWithCommentDto> getUserItems(Long userId) {
         log.info("Запрос на получение вещей пользователя с id {}", userId);
-        return itemRepository.findByOwner(getOwner(userId))
-                .stream().map(ItemMapper::mapItemDto)
+        return itemRepository.findByOwner(getOwner(userId)).stream()
+                .map(item -> ItemMapper.
+                        toItemWithCommentDto(item,
+                                CommentMapper.mapListCommentDto(commentRepository.findCommentsByItemId(item.getId()))))
                 .toList();
     }
 

@@ -1,7 +1,12 @@
 package ru.practicum.shareit.item;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithCommentDto;
 import ru.practicum.shareit.user.User;
+
+import java.util.List;
 
 @UtilityClass
 public class ItemMapper {
@@ -24,6 +29,17 @@ public class ItemMapper {
                 .description(item.getDescription())
                 .available(item.getAvailable())
                 //.request(item.getRequest().getId())
+                .owner(item.getOwner().getId())
+                .build();
+    }
+
+    public ItemWithCommentDto toItemWithCommentDto(Item item, List<CommentDto> comments) {
+        return ItemWithCommentDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .comments(comments)
+                .available(item.getAvailable())
                 .owner(item.getOwner().getId())
                 .build();
     }
