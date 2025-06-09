@@ -51,6 +51,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public BookingResponseDto canceledBooking(Long userId, Long bookingId) {
+        Booking booking = checkBooking(bookingId);
+
+        if (!booking.getBooker().getId().equals(userId)) {
+            throw new ValidationException("Пользователь с id " + userId + " не может отменить бронь, так как она не " +
+                    "принадлежит ему");
+        }
+
+        booking.setStatus(BookingStatus.CANCELED);
+        return BookingMapper.mapBookingResponseDto(repository.save(booking));
+    }
+
+    @Override
     public BookingDto getBooking(Long bookingId) {
         return null;
     }

@@ -5,9 +5,11 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 
 public interface BookingService {
 
-    public BookingResponseDto createBooking(Long userId, BookingDto bookingDto);
+    BookingResponseDto createBooking(Long userId, BookingDto bookingDto);
 
     BookingResponseDto approveBooking(Long userId, Long bookingId, Boolean approved);
+
+    BookingResponseDto canceledBooking(Long userId, Long bookingId);
 
     BookingDto getBooking(Long bookingId);
 }

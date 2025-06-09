@@ -38,6 +38,17 @@ public class BookingController {
     }
 
     /**
+     * Отмена бронирования
+     * Patch /bookings/bookingId/canceled
+     * Headers X-Sharer-User-Id
+     */
+    @PatchMapping("/{bookingId}/canceled")
+    public BookingResponseDto approveBooking(@PathVariable("bookingId") Long bookingId,
+                                             @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return bookingService.canceledBooking(userId, bookingId);
+    }
+
+    /**
      * Получение информации о бронировании.
      * Post /bookings/bookingId
      * Headers X-Sharer-User-Id
