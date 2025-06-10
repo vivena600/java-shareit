@@ -11,6 +11,13 @@ import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
+    Optional<Booking> findTop1BookingByItemIdAndEndIsBeforeAndStatusOrderByStart(Long itemId, LocalDateTime endBefore,
+                                                                                 BookingStatus status);
+
+    Optional<Booking> findTop1BookingByItemIdAndEndIsAfterAndStatusOrderByStartDesc(Long itemId,
+                                                                                    LocalDateTime endBefore,
+                                                                                    BookingStatus status);
+
     @Query("SELECT b " +
             "FROM Booking b " +
             "JOIN FETCH b.item i " +
