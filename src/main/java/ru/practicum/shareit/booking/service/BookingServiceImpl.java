@@ -4,6 +4,7 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
@@ -21,10 +22,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository repository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final BookingMapper bookingMapper;
 
     @Override
     public BookingResponseDto createBooking(Long userId, BookingDto bookingDto) {
@@ -35,8 +38,8 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("Вещь с id " + bookingDto.getItemId() + " недоступна для бронирования");
         }
         bookingDto.setStatus(String.valueOf(BookingStatus.WAITING));
-        Booking bookingEntity = BookingMapper.mapBooking(bookingDto, user, item);
-        return BookingMapper.mapBookingResponseDto(repository.save(bookingEntity));
+        Booking bookingEntity = bookingMapper.mapBooking(bookingDto, user, item);
+        return bookingMapper.mapBookingResponseDto(repository.save(bookingEntity));
     }
 
     @Override
@@ -54,7 +57,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return BookingMapper.mapBookingResponseDto(repository.save(booking));
+        return bookingMapper.mapBookingResponseDto(repository.save(booking));
     }
 
     @Override
@@ -68,10 +71,11 @@ public class BookingServiceImpl implements BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELED);
-        return BookingMapper.mapBookingResponseDto(repository.save(booking));
+        return bookingMapper.mapBookingResponseDto(repository.save(booking));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BookingResponseDto getBooking(Long userId, Long bookingId) {
         Booking booking = checkBooking(bookingId);
         Item item = checkItem(booking.getItem().getId());
@@ -81,10 +85,11 @@ public class BookingServiceImpl implements BookingService {
                     "бронировании");
         }
 
-        return BookingMapper.mapBookingResponseDto(booking);
+        return bookingMapper.mapBookingResponseDto(booking);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getBookingByState(Long userId, String state) {
         BookingState bookingState = checkState(state);
         User user = getUser(userId);
@@ -98,10 +103,11 @@ public class BookingServiceImpl implements BookingService {
             default -> repository.getBookingByStateALL(userId);
         };
 
-        return BookingMapper.mapListBookingResponseDto(bookings);
+        return bookingMapper.mapListBookingResponseDto(bookings);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getBookingsAllItemsByState(String state, Long userId) {
         BookingState bookingState = checkState(state);
         getUser(userId);
@@ -115,7 +121,7 @@ public class BookingServiceImpl implements BookingService {
             default -> repository.getBookingAllItemsByStateALL(userId);
         };
 
-        return BookingMapper.mapListBookingResponseDto(bookings);
+        return bookingMapper.mapListBookingResponseDto(bookings);
     }
 
     private User getUser(Long userId) {

@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
@@ -14,30 +15,34 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
+    private final UserMapper mapper;
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAllUsers() {
         log.info("Запрос на получение информации о пользователях");
         return repository.findAll()
-                .stream().map(UserMapper::mapUserDto)
+                .stream().map(mapper::mapUserDto)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDto getUserById(Long id) {
         log.info("Запрос на получение информации о пользователе id:" + id);
         User user =  repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Не удалось нйти пользователя с id:" + id));
-        return UserMapper.mapUserDto(user);
+        return mapper.mapUserDto(user);
     }
 
     @Override
     public UserDto createUser(UserDto user) {
         log.info("Создание пользователя");
-        User userEntity = UserMapper.mapUser(user);
-        return UserMapper.mapUserDto(repository.save(userEntity));
+        User userEntity = mapper.mapUser(user);
+        return mapper.mapUserDto(repository.save(userEntity));
     }
 
     @Override
@@ -56,7 +61,7 @@ public class UserServiceImpl implements UserService {
             oldUser.setName(user.getName());
         }
 
-        return UserMapper.mapUserDto(repository.save(oldUser));
+        return mapper.mapUserDto(repository.save(oldUser));
     }
 
     @Override

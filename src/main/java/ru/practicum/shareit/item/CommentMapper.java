@@ -1,18 +1,17 @@
-package ru.practicum.shareit.item.service;
+package ru.practicum.shareit.item;
 
-import lombok.experimental.UtilityClass;
-import ru.practicum.shareit.item.Comment;
-import ru.practicum.shareit.item.Item;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserMapper;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-@UtilityClass
-public class CommentMapper {
+@Mapper(componentModel = "spring", uses = { UserMapper.class })
+public interface CommentMapper {
 
-    public Comment mapComment(CommentDto comment, User user, Item item) {
+    default Comment mapComment(CommentDto comment, User user, Item item) {
         return Comment.builder()
                 .id(comment.getId())
                 .author(user)
@@ -22,7 +21,7 @@ public class CommentMapper {
                 .build();
     }
 
-    public CommentDto mapCommentDto(Comment comment) {
+    default CommentDto mapCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .authorName(comment.getAuthor().getName())
@@ -31,7 +30,5 @@ public class CommentMapper {
                 .build();
     }
 
-    public List<CommentDto> mapListCommentDto(List<Comment> comments) {
-        return comments.stream().map(CommentMapper::mapCommentDto).collect(Collectors.toList());
-    }
+    List<CommentDto> mapListCommentDto(List<Comment> comments);
 }

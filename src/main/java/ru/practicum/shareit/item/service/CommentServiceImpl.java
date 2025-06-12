@@ -4,13 +4,11 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.Comment;
-import ru.practicum.shareit.item.CommentRepository;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -20,11 +18,13 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Service
 @Slf4j
+@Transactional
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository repository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
+    private final CommentMapper commentMapper;
 
     @Override
     public CommentDto createdComment(Long userId, Long itemId, CommentDto commentDto) {
@@ -33,8 +33,8 @@ public class CommentServiceImpl implements CommentService {
         Item item = checkItem(itemId);
         checkBooking(itemId, user.getId());
         commentDto.setCreated(LocalDateTime.now());
-        Comment commentEntity = CommentMapper.mapComment(commentDto, user, item);
-        return CommentMapper.mapCommentDto(repository.save(commentEntity));
+        Comment commentEntity = commentMapper.mapComment(commentDto, user, item);
+        return commentMapper.mapCommentDto(repository.save(commentEntity));
     }
 
     private User checkUser(Long userId) {

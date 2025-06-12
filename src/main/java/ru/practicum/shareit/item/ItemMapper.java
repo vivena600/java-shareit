@@ -1,18 +1,19 @@
 package ru.practicum.shareit.item;
 
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithCommentDto;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserMapper;
 
 import java.util.List;
 
-@UtilityClass
-public class ItemMapper {
+@Mapper(componentModel = "spring", uses = {CommentMapper.class, UserMapper.class})
+public interface ItemMapper {
 
-    public static Item mapItem(ItemDto itemDto, User user /* ,ItemRequest request */) {
+    default Item mapItem(ItemDto itemDto, User user /* ,ItemRequest request */) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
@@ -23,27 +24,25 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemDto mapItemDto(Item item) {
+    default ItemDto mapItemDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
-                //.request(item.getRequest().getId())
-                .owner(item.getOwner().getId())
+                .owner(item.getOwner() != null ? item.getOwner().getId() : null)
                 .build();
     }
 
-    public ItemWithCommentDto toItemWithCommentDto(Item item, List<CommentDto> comments,
-                                                   BookingDto nextBooking, BookingDto lastBooking) {
-
+    default ItemWithCommentDto toItemWithCommentDto(Item item, List<CommentDto> comments,
+                                                    BookingDto nextBooking, BookingDto lastBooking) {
         return ItemWithCommentDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .comments(comments)
                 .available(item.getAvailable())
-                .owner(item.getOwner().getId())
+                .owner(item.getOwner() != null ? item.getOwner().getId() : null)
                 .lastBooking(lastBooking)
                 .nextBooking(nextBooking)
                 .build();
