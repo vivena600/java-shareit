@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserMapper;
