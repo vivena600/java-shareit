@@ -21,7 +21,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handlerValidation(final ValidationException ex) {
         log.error("Параметр не прошел проверку: {}", ex.getMessage());
         return Map.of("error validation", ex.getMessage());

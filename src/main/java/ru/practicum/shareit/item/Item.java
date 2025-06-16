@@ -1,26 +1,37 @@
 package ru.practicum.shareit.item;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
-import ru.practicum.shareit.request.ItemRequest;
+import jakarta.persistence.*;
+import lombok.*;
 import ru.practicum.shareit.user.User;
 
-@Data
+@Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "items")
 public class Item {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Не заполнено наименование вещи")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @NotBlank(message = "Не заполнено описание вещи")
+    @Column(name = "description", nullable = false)
     private String description;
 
-    @NotNull(message = "Не заполнен статус аренды")
+    @Column(name = "available")
     private Boolean available;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User owner;
-    private ItemRequest request;
+
+    /* @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+     private ItemRequest request;
+     */
 }

@@ -1,23 +1,11 @@
 package ru.practicum.shareit.user;
 
-import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
 
-@UtilityClass
-public class UserMapper {
+@Mapper(componentModel = "spring")
+public interface UserMapper {
 
-    public static User mapUser(UserDto userDto) {
-        return User.builder()
-                .id(userDto.getId())
-                .name(userDto.getName())
-                .email(userDto.getEmail())
-                .build();
-    }
+    User mapUser(UserDto userDto);
 
-    public static UserDto mapUserDto(User user) {
-        return UserDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .build();
-    }
+    UserDto mapUserDto(User user);
 }

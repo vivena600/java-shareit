@@ -1,11 +1,9 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.User;
 
 @Data
 @Builder
@@ -21,6 +19,7 @@ public class ItemDto {
     @NotNull(message = "Не заполнен статус аренды")
     private Boolean available;
 
-    private User owner;
-    private ItemRequest request;
+    private Long owner;
+
+    //private Long request;
 }
