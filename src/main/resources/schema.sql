@@ -33,8 +33,10 @@ CREATE TABLE IF NOT EXISTS items
     name        VARCHAR(255)                            NOT NULL,
     description VARCHAR(512)                            NOT NULL,
     available   BOOLEAN                                 NOT NULL,
+    request_id  BIGINT,
     CONSTRAINT pk_items PRIMARY KEY (id),
-    CONSTRAINT fk_items_users FOREIGN KEY (user_id) REFERENCES users (id)
+    CONSTRAINT fk_items_users FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_items_requests FOREIGN KEY (request_id) REFERENCES requests (id)
 );
 
 -- ==========================================

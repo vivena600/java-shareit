@@ -13,6 +13,8 @@ import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithCommentDto;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.RequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -31,6 +33,8 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final RequestRepository requestRepository;
+
     private final ItemMapper itemMapper;
     private final CommentMapper commentMapper;
     private final BookingMapper bookingMapper;
@@ -39,7 +43,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto createItem(Long userId, ItemDto item) {
         log.info("Пользователь с id = {} создает вещь {}", userId, item);
         User user = getOwner(userId);
-        Item itemEntity = itemMapper.mapItem(item, user);
+        ItemRequest request = checkItemRequest(item.getRequestId());
+        Item itemEntity = itemMapper.mapItem(item, user, request);
         return itemMapper.mapItemDto(itemRepository.save(itemEntity));
     }
 
@@ -135,5 +140,13 @@ public class ItemServiceImpl implements ItemService {
     private User getOwner(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Не удалось найти пользователя с id " + userId));
+    }
+
+    private ItemRequest checkItemRequest(Long requestId) {
+        if (requestId == null) {
+            return null;
+        }
+        return requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Не удалось найти запрос с id " + requestId));
     }
 }

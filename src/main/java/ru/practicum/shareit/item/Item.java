@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.request.ItemRequest;
 
 @Getter
 @Setter
@@ -10,7 +11,7 @@ import ru.practicum.shareit.user.User;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "items")
+@Table(name = "items", schema = "public")
 public class Item {
 
     @Id
@@ -30,8 +31,7 @@ public class Item {
     @JoinColumn(name = "user_id")
     private User owner;
 
-    /* @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-     private ItemRequest request;
-     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
+    private ItemRequest request;
 }

@@ -10,10 +10,10 @@ import lombok.Data;
 public class ItemDto {
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "Не заполнено название вещи")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "Не заполнено описание")
     private String description;
 
     @NotNull(message = "Не заполнен статус аренды")
@@ -21,5 +21,5 @@ public class ItemDto {
 
     private Long owner;
 
-    //private Long request;
+    private Long requestId;
 }

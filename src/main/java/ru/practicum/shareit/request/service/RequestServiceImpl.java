@@ -7,12 +7,14 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.RequestMapper;
 import ru.practicum.shareit.request.RequestRepository;
+import ru.practicum.shareit.request.dto.FullRequestDto;
 import ru.practicum.shareit.request.dto.RequestAddDto;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -34,6 +36,14 @@ public class RequestServiceImpl implements RequestService {
         User user = checkUser(userId);
         ItemRequest entity = requestMapper.mapItemRequest(newRequest, user);
         return requestMapper.mapRequestDto(requestRepository.save(entity));
+    }
+
+    @Override
+    public List<FullRequestDto> createFullRequest(Long userId) {
+        log.info("Запрос на получение списка запросов пользователя с  id {}", userId);
+
+        List<ItemRequest> requests = requestRepository.findByNotUserId(userId);
+        return null;
     }
 
     private User checkUser(Long userId) {

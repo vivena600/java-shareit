@@ -5,6 +5,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithCommentDto;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserMapper;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {CommentMapper.class, UserMapper.class})
 public interface ItemMapper {
 
-    default Item mapItem(ItemDto itemDto, User user /* ,ItemRequest request */) {
+    default Item mapItem(ItemDto itemDto, User user , ItemRequest request) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
@@ -21,6 +22,7 @@ public interface ItemMapper {
                 .available(itemDto.getAvailable())
                 //.request(request)
                 .owner(user)
+                .request(request)
                 .build();
     }
 
@@ -31,6 +33,7 @@ public interface ItemMapper {
                 .description(item.getDescription())
                 .available(item.getAvailable())
                 .owner(item.getOwner() != null ? item.getOwner().getId() : null)
+                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
                 .build();
     }
 
