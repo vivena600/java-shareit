@@ -5,6 +5,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithCommentDto;
+import ru.practicum.shareit.item.dto.ShortItemDto;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserMapper;
@@ -50,4 +51,15 @@ public interface ItemMapper {
                 .nextBooking(nextBooking)
                 .build();
     }
+
+    default ShortItemDto toShortItemDto(Item item) {
+        return ShortItemDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .userId(item.getOwner() != null ? item.getOwner().getId() : null)
+                .build();
+    }
+
+    List<ShortItemDto> toShortItemDtoList(List<Item> items);
 }

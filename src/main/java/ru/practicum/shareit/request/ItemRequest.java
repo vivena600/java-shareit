@@ -27,7 +27,7 @@ public class ItemRequest {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User requestor;
+    private User requester;
 
     @Column(name = "created", nullable = false)
     private LocalDateTime created;

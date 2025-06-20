@@ -14,6 +14,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findByOwnerId(Long id);
 
+    List<Item> findByRequest_Id(Long id);
+
     @Modifying
     @Query("SELECT i FROM Item i JOIN FETCH i.owner WHERE i.available = true " +
             "AND (UPPER(i.name) LIKE UPPER(CONCAT('%', :text, '%')) " +

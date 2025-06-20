@@ -9,8 +9,10 @@ import java.util.List;
 public interface RequestRepository extends JpaRepository<ItemRequest, Long> {
 
     @Query("SELECT r FROM ItemRequest r " +
-            "JOIN FETCH r.requestor " +
-            "WHERE r.requestor.id != :userId " +
+            "JOIN FETCH r.requester " +
+            "WHERE r.requester.id != :userId " +
             "ORDER BY r.created DESC")
     List<ItemRequest> findByNotUserId(@Param("userId") Long userId);
+
+    List<ItemRequest> findByRequester_IdOrderByCreatedDesc(Long requesterId);
 }

@@ -10,5 +10,9 @@ public interface RequestService {
 
     RequestDto createRequest(RequestAddDto requestAddDto, Long userId);
 
-    List<FullRequestDto> createFullRequest(Long userId);
+    FullRequestDto getRequestById(Long requestId, Long userId);
+
+    List<FullRequestDto> getRequestByUser(Long userId);
+
+    List<RequestDto> getAllRequests(Long userId);
 }
