@@ -13,9 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingState;
 
-import java.util.List;
-
-
 @Controller
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
