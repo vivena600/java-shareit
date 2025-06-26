@@ -17,6 +17,8 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithCommentDto;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.RequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ItemServiceImplTest {
+    private final LocalDateTime testTime = LocalDateTime.of(2025, 07, 25, 00, 00, 00);
 
     @Mock
     private ItemRepository repository;
@@ -43,6 +46,9 @@ public class ItemServiceImplTest {
 
     @Mock
     private BookingRepository bookingRepository;
+
+    @Mock
+    private RequestRepository requestRepository;
 
     @Spy
     private final ItemMapper mapper = Mappers.getMapper(ItemMapper.class);
@@ -60,6 +66,22 @@ public class ItemServiceImplTest {
             .id(1L)
             .name("user1")
             .email("email1@ya.ru")
+            .build();
+
+    private final ItemRequest request = ItemRequest.builder()
+            .id(1L)
+            .requester(user1)
+            .created(testTime)
+            .description("desc1")
+            .build();
+
+    private final Item itemWithRequest = Item.builder()
+            .id(3L)
+            .owner(user1)
+            .name("item3")
+            .description("desc2")
+            .available(true)
+            .request(request)
             .build();
 
     private final Item item1 = Item.builder()
@@ -131,10 +153,33 @@ public class ItemServiceImplTest {
             verify(repository, never()).save(any());
         }
 
-        //TODO
         @Test
         public void createItemWithRequest() {
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(requestRepository.findById(itemWithRequest.getRequest().getId())).thenReturn(Optional.of(request));
+            when(repository.save(any())).thenReturn(itemWithRequest);
+            ItemDto dto = mapper.mapItemDto(itemWithRequest);
 
+            ItemDto result = service.createItem(user1.getId(), dto);
+
+            verify(repository, times(1)).save(any());
+            checkItem(dto, result);
+        }
+
+        @Test
+        public void createItemWithFailRequest() {
+            Long requestId = 99L;
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(requestRepository.findById(requestId)).thenReturn(Optional.empty());
+
+            itemWithRequest.getRequest().setId(requestId);
+            ItemDto dto = mapper.mapItemDto(itemWithRequest);
+
+            NotFoundException ex = assertThrows(NotFoundException.class,
+                    () -> service.createItem(user1.getId(), dto));
+
+            assertEquals("Не удалось найти запрос с id 99", ex.getMessage());
+            verify(repository, never()).save(any());
         }
     }
 
