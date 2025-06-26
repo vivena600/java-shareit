@@ -15,7 +15,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {CommentMapper.class, UserMapper.class})
 public interface ItemMapper {
 
-    default Item mapItem(ItemDto itemDto, User user , ItemRequest request) {
+    default Item mapItem(ItemDto itemDto, User user, ItemRequest request) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
