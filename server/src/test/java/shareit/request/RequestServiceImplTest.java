@@ -159,7 +159,7 @@ class RequestServiceImplTest {
     }
 
     @Test
-    void createRequest_userNotFound_throwsException() {
+    void createRequestUserNotFound() {
         RequestAddDto addDto = new RequestAddDto();
         addDto.setDescription("New request");
 
@@ -193,12 +193,31 @@ class RequestServiceImplTest {
     }
 
     @Test
-    void getAllRequests_userNotFound_throwsException() {
+    void getAllRequestsUserNotFound() {
         when(userRepository.findById(user1.getId())).thenReturn(Optional.empty());
 
         NotFoundException ex = assertThrows(NotFoundException.class,
                 () -> requestService.getAllRequests(user1.getId()));
 
         assertEquals("Не удалось найти пользователя с id " + user1.getId(), ex.getMessage());
+    }
+
+    @Test
+    void getRequestByUser() {
+        when(requestRepository.findByRequester_IdOrderByCreatedDesc(user1.getId()))
+                .thenReturn(Collections.singletonList(request));
+        when(itemRepository.findByRequest_Id(request.getId())).thenReturn(Collections.emptyList());
+        when(itemMapper.toShortItemDtoList(Collections.emptyList())).thenReturn(Collections.emptyList());
+        when(requestMapper.mapFullRequestDto(request, Collections.emptyList())).thenReturn(fullRequest);
+
+        var results = requestService.getRequestByUser(user1.getId());
+
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        assertEquals(fullRequest.getId(), results.get(0).getId());
+
+        verify(requestRepository).findByRequester_IdOrderByCreatedDesc(user1.getId());
+        verify(itemRepository).findByRequest_Id(request.getId());
+        verify(requestMapper).mapFullRequestDto(request, Collections.emptyList());
     }
 }
