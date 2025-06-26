@@ -103,7 +103,7 @@ public class ItemServiceImplTest {
     }
 
     @Nested
-    class createItem {
+    class CreateTest {
 
         @Test
         public void createItem() {
@@ -139,7 +139,7 @@ public class ItemServiceImplTest {
     }
 
     @Nested
-    class getItem {
+    class GetTest {
         @Test
         public void getItemById() {
             when(repository.findById(item1.getId())).thenReturn(Optional.of(item1));
