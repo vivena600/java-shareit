@@ -11,6 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.exception.ErrorRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.*;
@@ -213,7 +215,7 @@ public class ItemServiceImplTest {
         }
 
         @Test
-        void updateItemThrowsNotFoundExceptionWhenItemNotFound() {
+        void updateItemWithItemNotFound() {
             Long userId = user1.getId();
             Long itemId = 999L;
 
@@ -235,7 +237,7 @@ public class ItemServiceImplTest {
         }
 
         @Test
-        void updateItemThrowsErrorRequestExceptionWhenUserNotOwner() {
+        void updateItemNotOwner() {
             Long userId = user1.getId();
             Long itemId = item2.getId();
 
@@ -268,6 +270,67 @@ public class ItemServiceImplTest {
     @Nested
     class GetTest {
         @Test
+        void getItemWithCommentsAndBookings() {
+            Booking lastBooking = Booking.builder()
+                    .id(1L)
+                    .start(testTime.minusDays(2))
+                    .end(testTime.minusDays(1))
+                    .booker(user1)
+                    .item(item1)
+                    .status(BookingStatus.APPROVED)
+                    .build();
+
+            Booking nextBooking = Booking.builder()
+                    .id(2L)
+                    .start(testTime.plusDays(1))
+                    .end(testTime.plusDays(2))
+                    .booker(user1)
+                    .item(item1)
+                    .status(BookingStatus.APPROVED)
+                    .build();
+
+            BookingDto lastBookingDto = BookingDto.builder()
+                    .id(1L)
+                    .start(testTime.minusDays(2))
+                    .end(testTime.minusDays(1))
+                    .booker(user1.getId())
+                    .status(BookingStatus.APPROVED.toString())
+                    .build();
+
+            BookingDto nextBookingDto = BookingDto.builder()
+                    .id(2L)
+                    .start(testTime.plusDays(1))
+                    .end(testTime.plusDays(2))
+                    .booker(user1.getId())
+                    .status(BookingStatus.APPROVED.toString())
+                    .build();
+
+            Comment comment = Comment.builder()
+                    .id(1L)
+                    .text("Great item!")
+                    .author(user1)
+                    .item(item1)
+                    .createdAt(testTime)
+                    .build();
+
+            when(repository.findById(item1.getId())).thenReturn(Optional.of(item1));
+            when(commentRepository.findCommentsByItemId(item1.getId())).thenReturn(List.of(comment));
+            when(bookingMapper.mapBookingDto(nextBooking)).thenReturn(nextBookingDto);
+            when(bookingMapper.mapBookingDto(lastBooking)).thenReturn(lastBookingDto);
+            when(bookingRepository.findLastBooking(eq(item1.getId()), any(LocalDateTime.class))).thenReturn(Optional.of(lastBooking));
+            when(bookingRepository.findNextBooking(eq(item1.getId()), any(LocalDateTime.class))).thenReturn(Optional.of(nextBooking));
+
+            ItemWithCommentDto result = service.getItem(item1.getId());
+
+            assertNotNull(result);
+            assertEquals(1, result.getComments().size());
+            assertNotNull(result.getLastBooking());
+            assertNotNull(result.getNextBooking());
+            assertEquals(1L, result.getLastBooking().getId());
+            assertEquals(2L, result.getNextBooking().getId());
+        }
+
+        @Test
         public void getItemById() {
             when(repository.findById(item1.getId())).thenReturn(Optional.of(item1));
             when(commentRepository.findCommentsByItemId(item1.getId())).thenReturn(Collections.EMPTY_LIST);
@@ -284,6 +347,22 @@ public class ItemServiceImplTest {
             assertEquals(dto.getDescription(), result.getDescription());
             assertEquals(dto.getAvailable(), result.getAvailable());
             assertEquals(dto.getOwner(), result.getOwner());
+        }
+
+        @Test
+        void getItemDataMapping() {
+            when(repository.findById(item1.getId())).thenReturn(Optional.of(item1));
+            when(commentRepository.findCommentsByItemId(item1.getId())).thenReturn(Collections.emptyList());
+            when(bookingRepository.findLastBooking(anyLong(), any())).thenReturn(Optional.empty());
+            when(bookingRepository.findNextBooking(anyLong(), any())).thenReturn(Optional.empty());
+
+            ItemWithCommentDto result = service.getItem(item1.getId());
+
+            assertEquals(item1.getId(), result.getId());
+            assertEquals(item1.getName(), result.getName());
+            assertEquals(item1.getDescription(), result.getDescription());
+            assertEquals(item1.getAvailable(), result.getAvailable());
+            assertEquals(item1.getOwner().getId(), result.getOwner());
         }
 
         @Test
@@ -367,7 +446,7 @@ public class ItemServiceImplTest {
     class SearchItemsTest {
 
         @Test
-        void searchItems_shouldReturnEmptyList_whenTextIsEmpty() {
+        void searchItemsWhenTextIsEmpty() {
             when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
 
             List<ItemDto> result = service.searchItems(user1.getId(), "");
@@ -380,7 +459,7 @@ public class ItemServiceImplTest {
         }
 
         @Test
-        void searchItems_shouldReturnListOfItemDtos_whenTextIsNotEmpty() {
+        void searchItemsWithNotEmpty() {
             String query = "item";
             when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
             when(repository.searchItems(query)).thenReturn(List.of(item1, item2));
@@ -396,7 +475,7 @@ public class ItemServiceImplTest {
         }
 
         @Test
-        void searchItems_shouldThrowException_whenUserNotFound() {
+        void searchItemsWhenUserNotFound() {
             when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
             NotFoundException ex = assertThrows(NotFoundException.class, () -> service.searchItems(99L, "item"));
