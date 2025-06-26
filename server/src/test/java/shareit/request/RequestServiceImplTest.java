@@ -10,6 +10,8 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ShortItemDto;
 import ru.practicum.shareit.request.*;
 import ru.practicum.shareit.request.dto.FullRequestDto;
+import ru.practicum.shareit.request.dto.RequestAddDto;
+import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.service.RequestServiceImpl;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -77,7 +79,7 @@ class RequestServiceImplTest {
             .build();
 
     @Test
-    void getRequestById_success() {
+    void getRequestById() {
         when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         when(requestRepository.findById(request.getId())).thenReturn(Optional.of(request));
         when(itemRepository.findByRequest_Id(request.getId())).thenReturn(Collections.emptyList());
@@ -110,7 +112,7 @@ class RequestServiceImplTest {
     }
 
     @Test
-    void getRequestById_requestNotFound_throwsException() {
+    void getRequestByIdRequestNotFound() {
         when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
         when(requestRepository.findById(request.getId())).thenReturn(Optional.empty());
 
@@ -120,5 +122,83 @@ class RequestServiceImplTest {
         assertEquals("Не удалось найти запрос с id " + request.getId(), ex.getMessage());
         verify(userRepository).findById(request.getId());
         verify(requestRepository).findById(request.getId());
+    }
+
+    @Test
+    void createRequest() {
+        RequestAddDto addDto = new RequestAddDto();
+        addDto.setDescription("New request");
+
+        RequestDto requestDto = RequestDto.builder()
+                .description("New request")
+                .userId(user1.getId())
+                .created(testTime)
+                .build();
+
+        ItemRequest entity = ItemRequest.builder()
+                .description(addDto.getDescription())
+                .requester(user1)
+                .created(testTime)
+                .build();
+
+        when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+        when(requestMapper.mapItemRequest(any(RequestDto.class), eq(user1))).thenReturn(entity);
+        when(requestRepository.save(entity)).thenReturn(entity);
+        when(requestMapper.mapRequestDto(entity)).thenReturn(requestDto);
+
+        RequestDto result = requestService.createRequest(addDto, user1.getId());
+
+        assertNotNull(result);
+        assertEquals(addDto.getDescription(), result.getDescription());
+        assertEquals(user1.getId(), result.getUserId());
+
+        verify(userRepository).findById(user1.getId());
+        verify(requestMapper).mapItemRequest(any(RequestDto.class), eq(user1));
+        verify(requestRepository).save(entity);
+        verify(requestMapper).mapRequestDto(entity);
+    }
+
+    @Test
+    void createRequest_userNotFound_throwsException() {
+        RequestAddDto addDto = new RequestAddDto();
+        addDto.setDescription("New request");
+
+        when(userRepository.findById(user1.getId())).thenReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> requestService.createRequest(addDto, user1.getId()));
+
+        assertEquals("Не удалось найти пользователя с id " + user1.getId(), ex.getMessage());
+    }
+
+    @Test
+    void getAllRequests() {
+        when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+        when(requestRepository.findByNotUserId(user1.getId())).thenReturn(Collections.singletonList(request));
+        when(requestMapper.mapRequestDto(Collections.singletonList(request))).thenReturn(Collections.singletonList(RequestDto.builder()
+                .description(request.getDescription())
+                .userId(user1.getId())
+                .created(request.getCreated())
+                .build()));
+
+        var result = requestService.getAllRequests(user1.getId());
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(request.getDescription(), result.get(0).getDescription());
+
+        verify(userRepository).findById(user1.getId());
+        verify(requestRepository).findByNotUserId(user1.getId());
+        verify(requestMapper).mapRequestDto(Collections.singletonList(request));
+    }
+
+    @Test
+    void getAllRequests_userNotFound_throwsException() {
+        when(userRepository.findById(user1.getId())).thenReturn(Optional.empty());
+
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> requestService.getAllRequests(user1.getId()));
+
+        assertEquals("Не удалось найти пользователя с id " + user1.getId(), ex.getMessage());
     }
 }
