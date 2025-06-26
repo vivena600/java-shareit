@@ -96,15 +96,6 @@ public class BookingServiceImplTest {
             .status(BookingStatus.APPROVED)
             .build();
 
-    private final BookingDto bookingDto = BookingDto.builder()
-            .id(1L)
-            .booker(user1.getId())
-            .itemId(item1.getId())
-            .start(testTime.minusDays(1))
-            .end(testTime.plusDays(1))
-            .status(BookingStatus.APPROVED.toString())
-            .build();
-
     private final BookingResponseDto responseDto = BookingResponseDto.builder()
             .id(1L)
             .item(itemDto)
@@ -146,6 +137,32 @@ public class BookingServiceImplTest {
             .status(BookingStatus.REJECTED)
             .build();
 
+    @Nested
+    class CancelBooking {
+        @Test
+        void shouldCancelBooking() {
+            when(bookingRepository.findById(booking1.getId())).thenReturn(Optional.of(booking1));
+            when(bookingRepository.save(any())).thenReturn(booking1);
+            when(bookingMapper.mapBookingResponseDto(any())).thenReturn(responseDto);
+
+            BookingResponseDto result = service.canceledBooking(user1.getId(), booking1.getId());
+
+            verify(bookingRepository).save(any());
+        }
+
+        @Test
+        void CancelBookingWithFailUser() {
+            Long otherUserId = 99L;
+            when(bookingRepository.findById(booking1.getId())).thenReturn(Optional.of(booking1));
+
+            var ex = assertThrows(ErrorRequestException.class,
+                    () -> service.canceledBooking(otherUserId, booking1.getId()));
+
+            assertEquals("Пользователь с id 99 не может отменить бронь, так как она не принадлежит ему",
+                    ex.getMessage());
+            verify(bookingRepository, never()).save(any());
+        }
+    }
 
     @Nested
     class Create {
@@ -228,6 +245,20 @@ public class BookingServiceImplTest {
 
             assertEquals(4, result.size());
             verify(bookingRepository).getBookingAllItemsByStateALL(user1.getId());
+        }
+
+        @Test
+        void getBookingsAllItemsWithInvalidState() {
+            Long userId = 1L;
+            String invalidState = "invalid_state";
+
+            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+                    () -> service.getBookingsAllItemsByState(invalidState, userId));
+
+            assertEquals("Не существует состояния " + invalidState, ex.getMessage());
+
+            verifyNoMoreInteractions(userRepository);
+            verifyNoMoreInteractions(bookingRepository);
         }
 
         @Test
@@ -362,6 +393,20 @@ public class BookingServiceImplTest {
 
             assertThrows(NotFoundException.class,
                     () -> service.getBookingByState(userId, "ALL"));
+        }
+
+        @Test
+        void getBookingsWithInvalidState() {
+            Long userId = 1L;
+            String invalidState = "invalid_state";
+
+            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+                    () -> service.getBookingByState(userId, invalidState));
+
+            assertEquals("Не существует состояния " + invalidState, ex.getMessage());
+
+            verifyNoMoreInteractions(userRepository);
+            verifyNoMoreInteractions(bookingRepository);
         }
     }
 
