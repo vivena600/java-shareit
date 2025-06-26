@@ -15,6 +15,7 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
+import ru.practicum.shareit.exception.ErrorRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemMapper;
@@ -273,12 +274,188 @@ public class BookingServiceImplTest {
         }
 
         @Test
-        void getBookingsForNonExistingUser() {
+        void getBookingsForNonExistingUser1() {
             Long userId = 99L;
             when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
             assertThrows(NotFoundException.class,
                     () -> service.getBookingsAllItemsByState("ALL", userId));
+        }
+
+        @Test
+        void getAllBookingsForUser() {
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(bookingRepository.getBookingByStateALL(user1.getId()))
+                    .thenReturn(List.of(bookingPast, bookingCurrent, bookingFuture, bookingRejected));
+            when(bookingMapper.mapListBookingResponseDto(anyList()))
+                    .thenReturn(List.of(responsePast, responseCurrent, responseFuture, responseRejected));
+
+            List<BookingResponseDto> result = service.getBookingByState(user1.getId(), "ALL");
+
+            assertEquals(4, result.size());
+            verify(bookingRepository).getBookingByStateALL(user1.getId());
+        }
+
+        @Test
+        void getCurrentBookingsForUser() {
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(bookingRepository.getBookingByStateCurrent(eq(user1.getId()), any(LocalDateTime.class)))
+                    .thenReturn(List.of(bookingCurrent));
+            when(bookingMapper.mapListBookingResponseDto(anyList()))
+                    .thenReturn(List.of(responseCurrent));
+
+            List<BookingResponseDto> result = service.getBookingByState(user1.getId(), "CURRENT");
+
+            assertEquals(1, result.size());
+            assertEquals(responseCurrent.getStart(), result.get(0).getStart());
+            verify(bookingRepository).getBookingByStateCurrent(eq(user1.getId()), any(LocalDateTime.class));
+        }
+
+        @Test
+        void getFutureBookingsForUser() {
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(bookingRepository.getBookingByStateFuture(eq(user1.getId()), any(LocalDateTime.class)))
+                    .thenReturn(List.of(bookingFuture));
+            when(bookingMapper.mapListBookingResponseDto(anyList()))
+                    .thenReturn(List.of(responseFuture));
+
+            List<BookingResponseDto> result = service.getBookingByState(user1.getId(), "FUTURE");
+
+            assertEquals(1, result.size());
+            assertEquals(BookingStatus.APPROVED.toString(), result.get(0).getStatus());
+            verify(bookingRepository).getBookingByStateFuture(eq(user1.getId()), any(LocalDateTime.class));
+        }
+
+        @Test
+        void getPastBookingsForUser() {
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(bookingRepository.getBookingByStatePast(eq(user1.getId()), any(LocalDateTime.class)))
+                    .thenReturn(List.of(bookingPast));
+            when(bookingMapper.mapListBookingResponseDto(anyList()))
+                    .thenReturn(List.of(responsePast));
+
+            List<BookingResponseDto> result = service.getBookingByState(user1.getId(), "PAST");
+
+            assertEquals(1, result.size());
+            verify(bookingRepository).getBookingByStatePast(eq(user1.getId()), any(LocalDateTime.class));
+        }
+
+        @Test
+        void getRejectedBookingsForUser() {
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(bookingRepository.getBookingByStateStatus(user1.getId(), BookingStatus.REJECTED))
+                    .thenReturn(List.of(bookingRejected));
+            when(bookingMapper.mapListBookingResponseDto(anyList()))
+                    .thenReturn(List.of(responseRejected));
+
+            List<BookingResponseDto> result = service.getBookingByState(user1.getId(), "REJECTED");
+
+            assertEquals(1, result.size());
+            assertEquals(BookingStatus.REJECTED.toString(), result.get(0).getStatus());
+            verify(bookingRepository).getBookingByStateStatus(user1.getId(), BookingStatus.REJECTED);
+        }
+
+        @Test
+        void getBookingsForNonExistingUser() {
+            Long userId = 99L;
+            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+            assertThrows(NotFoundException.class,
+                    () -> service.getBookingByState(userId, "ALL"));
+        }
+    }
+
+    @Nested
+    class ApproveBooking {
+
+        private final Booking waitingBooking = Booking.builder()
+                .id(2L)
+                .item(item1)
+                .booker(user1)
+                .start(testTime.minusDays(1))
+                .end(testTime.plusDays(1))
+                .status(BookingStatus.WAITING)
+                .build();
+
+        private final BookingResponseDto approvedResponseDto = BookingResponseDto.builder()
+                .id(2L)
+                .item(itemDto)
+                .booker(userDto)
+                .start(testTime.minusDays(1))
+                .end(testTime.plusDays(1))
+                .status(BookingStatus.APPROVED.toString())
+                .build();
+
+        private final BookingResponseDto rejectedResponseDto = BookingResponseDto.builder()
+                .id(2L)
+                .item(itemDto)
+                .booker(userDto)
+                .start(testTime.minusDays(1))
+                .end(testTime.plusDays(1))
+                .status(BookingStatus.REJECTED.toString())
+                .build();
+
+        @Test
+        void shouldApproveBookingSuccessfully() {
+            when(bookingRepository.findById(waitingBooking.getId())).thenReturn(Optional.of(waitingBooking));
+            when(itemRepository.findById(item1.getId())).thenReturn(Optional.of(item1));
+            when(bookingRepository.save(any())).thenReturn(waitingBooking);
+            when(bookingMapper.mapBookingResponseDto(any())).thenReturn(approvedResponseDto);
+
+            BookingResponseDto result = service.approveBooking(user1.getId(), waitingBooking.getId(), true);
+
+            assertEquals(BookingStatus.APPROVED.toString(), result.getStatus());
+            verify(bookingRepository).save(any());
+        }
+
+        @Test
+        void shouldThrowIfBookingStatusNotWaiting() {
+            booking1.setStatus(BookingStatus.APPROVED);
+            Booking alreadyApproved = booking1;
+            when(bookingRepository.findById(booking1.getId())).thenReturn(Optional.of(alreadyApproved));
+
+            var ex = assertThrows(ErrorRequestException.class,
+                    () -> service.approveBooking(user1.getId(), booking1.getId(), true));
+
+            assertEquals("Статус бронирования уже изменен", ex.getMessage());
+            verify(bookingRepository, never()).save(any());
+        }
+
+        @Test
+        void shouldThrowIfUserNotOwner() {
+            Long wrongUserId = 99L;
+
+            when(bookingRepository.findById(waitingBooking.getId())).thenReturn(Optional.of(waitingBooking));
+            when(itemRepository.findById(item1.getId())).thenReturn(Optional.of(item1));
+
+            var ex = assertThrows(ErrorRequestException.class,
+                    () -> service.approveBooking(wrongUserId, waitingBooking.getId(), true));
+
+            assertEquals("Пользователь с id 99 не может редактировать статус этой вещи", ex.getMessage());
+            verify(bookingRepository, never()).save(any());
+        }
+
+        @Test
+        void shouldThrowIfBookingNotFound() {
+            when(bookingRepository.findById(100L)).thenReturn(Optional.empty());
+
+            var ex = assertThrows(NotFoundException.class,
+                    () -> service.approveBooking(user1.getId(), 100L, true));
+
+            assertEquals("Не удалось найти бронь с id:100", ex.getMessage());
+            verify(bookingRepository, never()).save(any());
+        }
+
+        @Test
+        void shouldThrowIfItemNotFound() {
+            when(bookingRepository.findById(waitingBooking.getId())).thenReturn(Optional.of(waitingBooking));
+            when(itemRepository.findById(item1.getId())).thenReturn(Optional.empty());
+
+            var ex = assertThrows(NotFoundException.class,
+                    () -> service.approveBooking(user1.getId(), waitingBooking.getId(), true));
+
+            assertEquals("Не удалось найти вещь с id:1", ex.getMessage());
+            verify(bookingRepository, never()).save(any());
         }
     }
 }

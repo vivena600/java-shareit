@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exception.ErrorRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -184,6 +185,87 @@ public class ItemServiceImplTest {
     }
 
     @Nested
+    class UpdateItemTest {
+
+        @Test
+        void updateItem() {
+            Long userId = user1.getId();
+            Long itemId = item1.getId();
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user1));
+            when(repository.findById(itemId)).thenReturn(Optional.of(item1));
+            ItemDto updatedDto = ItemDto.builder()
+                    .id(itemId)
+                    .name("updatedName")
+                    .description("updatedDescription")
+                    .available(false)
+                    .build();
+
+            when(repository.save(any(Item.class))).thenAnswer(invocation ->
+                    invocation.getArgument(0));
+            ItemDto result = service.updateItem(userId, itemId, updatedDto);
+
+            assertEquals(updatedDto.getName(), result.getName());
+            assertEquals(updatedDto.getDescription(), result.getDescription());
+            assertEquals(updatedDto.getAvailable(), result.getAvailable());
+
+            verify(repository).findById(itemId);
+            verify(repository).save(any(Item.class));
+        }
+
+        @Test
+        void updateItemThrowsNotFoundExceptionWhenItemNotFound() {
+            Long userId = user1.getId();
+            Long itemId = 999L;
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user1));
+            when(repository.findById(itemId)).thenReturn(Optional.empty());
+
+            ItemDto dto = ItemDto.builder()
+                    .id(itemId)
+                    .name("updatedName")
+                    .description("updatedDescription")
+                    .available(false)
+                    .build();
+
+            NotFoundException ex = assertThrows(NotFoundException.class, () -> service.updateItem(userId, itemId, dto));
+            assertEquals("Не удается найти вещь с id " + itemId, ex.getMessage());
+
+            verify(repository).findById(itemId);
+            verify(repository, never()).save(any());
+        }
+
+        @Test
+        void updateItemThrowsErrorRequestExceptionWhenUserNotOwner() {
+            Long userId = user1.getId();
+            Long itemId = item2.getId();
+
+            User anotherUser = User.builder().id(99L).name("other").email("other@ya.ru").build();
+            Item itemOwnedByOther = Item.builder()
+                    .id(itemId)
+                    .owner(anotherUser)
+                    .name("itemName")
+                    .description("desc")
+                    .available(true)
+                    .build();
+
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user1));
+            when(repository.findById(itemId)).thenReturn(Optional.of(itemOwnedByOther));
+
+            ItemDto dto = ItemDto.builder()
+                    .owner(99L)
+                    .build();
+
+            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+                    () -> service.updateItem(userId, itemId, dto));
+
+            assertEquals("Пользователь с id = " + userId + "не может редактировать эту вещь", ex.getMessage());
+
+            verify(repository).findById(itemId);
+            verify(repository, never()).save(any());
+        }
+    }
+
+    @Nested
     class GetTest {
         @Test
         public void getItemById() {
@@ -203,54 +285,124 @@ public class ItemServiceImplTest {
             assertEquals(dto.getAvailable(), result.getAvailable());
             assertEquals(dto.getOwner(), result.getOwner());
         }
+
+        @Test
+        public void getItemByFailId() {
+            Long failId = 99L;
+            when(repository.findById(failId)).thenReturn(Optional.empty());
+
+            NotFoundException ex = assertThrows(NotFoundException.class,
+                    () -> service.getItem(failId));
+
+            assertEquals("Не удается найти вещь с id 99", ex.getMessage());
+            verify(repository, never()).save(any());
+        }
+
+        @Test
+        public void getUserItems() {
+            List<Item> items = List.of(item1, item2);
+            List<Long> itemIds = items.stream().map(Item::getId).toList();
+
+            CommentDto commentDto = commentMapper.mapCommentDto(comment1);
+
+            when(repository.findByOwnerId(user1.getId())).thenReturn(items);
+            when(repository.findByOwner(user1)).thenReturn(items);
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(commentRepository.findCommentByItemIdIn(itemIds)).thenReturn(List.of(comment1));
+            when(bookingRepository.findLastBooking(eq(item1.getId()), any())).thenReturn(Optional.of(booking1));
+            when(bookingRepository.findNextBooking(eq(item1.getId()), any())).thenReturn(Optional.empty());
+            when(bookingRepository.findLastBooking(eq(item2.getId()), any())).thenReturn(Optional.empty());
+            when(bookingRepository.findNextBooking(eq(item2.getId()), any())).thenReturn(Optional.empty());
+
+            List<ItemWithCommentDto> result = service.getUserItems(user1.getId());
+
+            assertEquals(2, result.size());
+
+            ItemWithCommentDto result1 = result.stream()
+                    .filter(dto -> dto.getId().equals(item1.getId()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertEquals(item1.getName(), result1.getName());
+            assertEquals(1, result1.getComments().size());
+            assertEquals(comment1.getText(), result1.getComments().get(0).getText());
+
+            assertNotNull(result1.getLastBooking());
+            assertEquals(booking1.getId(), result1.getLastBooking().getId());
+
+            assertNull(result1.getNextBooking());
+
+            ItemWithCommentDto result2 = result.stream()
+                    .filter(dto -> dto.getId().equals(item2.getId()))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertEquals(item2.getName(), result2.getName());
+            assertTrue(result2.getComments().isEmpty());
+            assertNull(result2.getLastBooking());
+            assertNull(result2.getNextBooking());
+
+            verify(repository, times(1)).findByOwnerId(user1.getId());
+            verify(repository, times(1)).findByOwner(user1);
+            verify(commentRepository, times(1)).findCommentByItemIdIn(itemIds);
+        }
+
+        @Test
+        void getUserItemsUserNotFound() {
+            Long nonExistentUserId = 999L;
+
+            when(userRepository.findById(nonExistentUserId)).thenReturn(Optional.empty());
+
+            NotFoundException exception = assertThrows(NotFoundException.class, () -> {
+                service.getUserItems(nonExistentUserId);
+            });
+
+            assertEquals("Не удалось найти пользователя с id 999", exception.getMessage());
+
+            verify(userRepository).findById(nonExistentUserId);
+        }
     }
 
-    @Test
-    public void getUserItems() {
-        List<Item> items = List.of(item1, item2);
-        List<Long> itemIds = items.stream().map(Item::getId).toList();
+    @Nested
+    class SearchItemsTest {
 
-        CommentDto commentDto = commentMapper.mapCommentDto(comment1);
+        @Test
+        void searchItems_shouldReturnEmptyList_whenTextIsEmpty() {
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
 
-        when(repository.findByOwnerId(user1.getId())).thenReturn(items);
-        when(repository.findByOwner(user1)).thenReturn(items);
-        when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
-        when(commentRepository.findCommentByItemIdIn(itemIds)).thenReturn(List.of(comment1));
-        when(bookingRepository.findLastBooking(eq(item1.getId()), any())).thenReturn(Optional.of(booking1));
-        when(bookingRepository.findNextBooking(eq(item1.getId()), any())).thenReturn(Optional.empty());
-        when(bookingRepository.findLastBooking(eq(item2.getId()), any())).thenReturn(Optional.empty());
-        when(bookingRepository.findNextBooking(eq(item2.getId()), any())).thenReturn(Optional.empty());
+            List<ItemDto> result = service.searchItems(user1.getId(), "");
 
-        List<ItemWithCommentDto> result = service.getUserItems(user1.getId());
+            assertNotNull(result);
+            assertTrue(result.isEmpty());
 
-        assertEquals(2, result.size());
+            verify(userRepository, times(1)).findById(user1.getId());
+            verify(repository, never()).searchItems(any());
+        }
 
-        ItemWithCommentDto result1 = result.stream()
-                .filter(dto -> dto.getId().equals(item1.getId()))
-                .findFirst()
-                .orElseThrow();
+        @Test
+        void searchItems_shouldReturnListOfItemDtos_whenTextIsNotEmpty() {
+            String query = "item";
+            when(userRepository.findById(user1.getId())).thenReturn(Optional.of(user1));
+            when(repository.searchItems(query)).thenReturn(List.of(item1, item2));
 
-        assertEquals(item1.getName(), result1.getName());
-        assertEquals(1, result1.getComments().size());
-        assertEquals(comment1.getText(), result1.getComments().get(0).getText());
+            List<ItemDto> result = service.searchItems(user1.getId(), query);
 
-        assertNotNull(result1.getLastBooking());
-        assertEquals(booking1.getId(), result1.getLastBooking().getId());
+            assertEquals(2, result.size());
+            checkItem(mapper.mapItemDto(item1), result.get(0));
+            checkItem(mapper.mapItemDto(item2), result.get(1));
 
-        assertNull(result1.getNextBooking());
+            verify(userRepository, times(1)).findById(user1.getId());
+            verify(repository, times(1)).searchItems(query);
+        }
 
-        ItemWithCommentDto result2 = result.stream()
-                .filter(dto -> dto.getId().equals(item2.getId()))
-                .findFirst()
-                .orElseThrow();
+        @Test
+        void searchItems_shouldThrowException_whenUserNotFound() {
+            when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertEquals(item2.getName(), result2.getName());
-        assertTrue(result2.getComments().isEmpty());
-        assertNull(result2.getLastBooking());
-        assertNull(result2.getNextBooking());
+            NotFoundException ex = assertThrows(NotFoundException.class, () -> service.searchItems(99L, "item"));
 
-        verify(repository, times(1)).findByOwnerId(user1.getId());
-        verify(repository, times(1)).findByOwner(user1);
-        verify(commentRepository, times(1)).findCommentByItemIdIn(itemIds);
+            assertEquals("Не удалось найти пользователя с id 99", ex.getMessage());
+            verify(repository, never()).searchItems(any());
+        }
     }
 }
