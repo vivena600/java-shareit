@@ -97,10 +97,40 @@ public class UserServiceImplTest {
             assertEquals("Не удалось нйти пользователя с id:99", exception.getMessage());
             verify(repository, times(1)).findById(anyLong());
         }
+
+        @Test
+        public void updateUserNoChanges() {
+            when(repository.findById(1L)).thenReturn(Optional.of(user1));
+            when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+            UserDto updatedDto = UserDto.builder()
+                    .id(1L)
+                    .name(user1.getName())
+                    .email(user1.getEmail())
+                    .build();
+
+            UserDto result = service.updateUser(updatedDto);
+
+            assertEquals(user1.getName(), result.getName());
+            assertEquals(user1.getEmail(), result.getEmail());
+
+            verify(repository).findById(1L);
+            verify(repository).save(any());
+        }
     }
 
     @Nested
     class Delete {
+        @Test
+        public void deleteUser() {
+            when(repository.findById(1L)).thenReturn(Optional.of(user1));
+
+            service.deleteUser(1L);
+
+            verify(repository).findById(1L);
+            verify(repository).delete(user1);
+        }
+
         @Test
         public void shouldDelete() {
             when(repository.findById(1L)).thenReturn(Optional.empty());

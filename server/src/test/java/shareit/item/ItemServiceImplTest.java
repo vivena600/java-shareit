@@ -484,4 +484,37 @@ public class ItemServiceImplTest {
             verify(repository, never()).searchItems(any());
         }
     }
+
+    @Test
+    void toItemWithCommentDto_shouldMapCorrectly() {
+        User user = new User(1L, "name", "email@mail.com");
+        Item item = Item.builder()
+                .id(1L)
+                .name("Item name")
+                .description("Desc")
+                .available(true)
+                .owner(user)
+                .build();
+
+        CommentDto comment = CommentDto.builder()
+                .id(1L)
+                .text("Nice")
+                .authorName("author")
+                .build();
+
+        BookingDto lastBooking = BookingDto.builder().id(10L).build();
+        BookingDto nextBooking = BookingDto.builder().id(20L).build();
+
+        ItemWithCommentDto dto = mapper.toItemWithCommentDto(
+                item, List.of(comment), nextBooking, lastBooking);
+
+        assertEquals(item.getId(), dto.getId());
+        assertEquals(item.getName(), dto.getName());
+        assertEquals(item.getDescription(), dto.getDescription());
+        assertEquals(item.getAvailable(), dto.getAvailable());
+        assertEquals(item.getOwner().getId(), dto.getOwner());
+        assertEquals(1, dto.getComments().size());
+        assertEquals(lastBooking, dto.getLastBooking());
+        assertEquals(nextBooking, dto.getNextBooking());
+    }
 }

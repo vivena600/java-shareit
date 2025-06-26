@@ -411,6 +411,24 @@ public class BookingServiceImplTest {
     }
 
     @Nested
+    class GetBooking {
+
+        @Test
+        void shouldThrowExceptionWhenUserNotBookerAndNotOwner() {
+            // arrange
+            Long unknownUserId = 99L;
+            when(bookingRepository.findById(booking1.getId())).thenReturn(Optional.of(booking1));
+            when(itemRepository.findById(item1.getId())).thenReturn(Optional.of(item1));
+
+            // act + assert
+            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+                    () -> service.getBooking(unknownUserId, booking1.getId()));
+
+            assertEquals("Пользователь с id 99 не может просматривать информации о бронировании", ex.getMessage());
+        }
+    }
+
+    @Nested
     class ApproveBooking {
 
         private final Booking waitingBooking = Booking.builder()
