@@ -151,7 +151,7 @@ public class BookingServiceImplTest {
         }
 
         @Test
-        void CancelBookingWithFailUser() {
+        void cancelBookingWithFailUser() {
             Long otherUserId = 99L;
             when(bookingRepository.findById(booking1.getId())).thenReturn(Optional.of(booking1));
 
