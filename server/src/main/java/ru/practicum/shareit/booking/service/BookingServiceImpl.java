@@ -11,7 +11,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
-import ru.practicum.shareit.exception.ErrorRequestException;
+import ru.practicum.shareit.exception.UnavailableActionError;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
@@ -37,7 +37,7 @@ public class BookingServiceImpl implements BookingService {
         User user = getUser(userId);
         Item item = checkItem(bookingDto.getItemId());
         if (!item.getAvailable()) {
-            throw new ErrorRequestException("Вещь с id " + bookingDto.getItemId() + " недоступна для бронирования");
+            throw new UnavailableActionError("Вещь с id " + bookingDto.getItemId() + " недоступна для бронирования");
         }
         bookingDto.setStatus(String.valueOf(BookingStatus.WAITING));
         Booking bookingEntity = bookingMapper.mapBooking(bookingDto, user, item);
@@ -50,12 +50,12 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = checkBooking(bookingId);
 
         if (booking.getStatus() != BookingStatus.WAITING) {
-            throw new ErrorRequestException("Статус бронирования уже изменен");
+            throw new UnavailableActionError("Статус бронирования уже изменен");
         }
 
         Item item = checkItem(booking.getItem().getId());
         if (!item.getOwner().getId().equals(userId)) {
-            throw new ErrorRequestException("Пользователь с id " + userId + " не может редактировать статус этой вещи");
+            throw new UnavailableActionError("Пользователь с id " + userId + " не может редактировать статус этой вещи");
         }
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = checkBooking(bookingId);
 
         if (!booking.getBooker().getId().equals(userId)) {
-            throw new ErrorRequestException("Пользователь с id " + userId + " не может отменить бронь, так как она не " +
+            throw new UnavailableActionError("Пользователь с id " + userId + " не может отменить бронь, так как она не " +
                     "принадлежит ему");
         }
 
@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
         Item item = checkItem(booking.getItem().getId());
 
         if (!booking.getBooker().getId().equals(userId) && !item.getOwner().getId().equals(userId)) {
-            throw new ErrorRequestException("Пользователь с id " + userId + " не может просматривать информации о " +
+            throw new UnavailableActionError("Пользователь с id " + userId + " не может просматривать информации о " +
                     "бронировании");
         }
 
@@ -145,7 +145,7 @@ public class BookingServiceImpl implements BookingService {
         try {
             return BookingState.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new ErrorRequestException("Не существует состояния " + state);
+            throw new UnavailableActionError("Не существует состояния " + state);
         }
     }
 }

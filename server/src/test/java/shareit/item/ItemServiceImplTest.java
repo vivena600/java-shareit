@@ -13,7 +13,7 @@ import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.BookingStatus;
-import ru.practicum.shareit.exception.ErrorRequestException;
+import ru.practicum.shareit.exception.UnavailableActionError;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -257,7 +257,7 @@ public class ItemServiceImplTest {
                     .owner(99L)
                     .build();
 
-            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+            UnavailableActionError ex = assertThrows(UnavailableActionError.class,
                     () -> service.updateItem(userId, itemId, dto));
 
             assertEquals("Пользователь с id = " + userId + "не может редактировать эту вещь", ex.getMessage());

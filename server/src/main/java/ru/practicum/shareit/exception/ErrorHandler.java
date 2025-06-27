@@ -20,18 +20,11 @@ public class ErrorHandler {
         return Map.of("notFound", ex.getMessage());
     }
 
-    @ExceptionHandler(ErrorRequestException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handlerValidation(final ErrorRequestException ex) {
-        log.error("Параметр не прошел проверку: {}", ex.getMessage());
+    @ExceptionHandler(UnavailableActionError.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handlerUnavailableAction(final UnavailableActionError ex) {
+        log.error("Некорректное действие: {}", ex.getMessage());
         return Map.of("error validation", ex.getMessage());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        log.error("Ошибка валидации: {}", ex.getMessage());
-        return Map.of("error", ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

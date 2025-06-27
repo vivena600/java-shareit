@@ -15,7 +15,7 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
-import ru.practicum.shareit.exception.ErrorRequestException;
+import ru.practicum.shareit.exception.UnavailableActionError;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemMapper;
@@ -155,7 +155,7 @@ public class BookingServiceImplTest {
             Long otherUserId = 99L;
             when(bookingRepository.findById(booking1.getId())).thenReturn(Optional.of(booking1));
 
-            var ex = assertThrows(ErrorRequestException.class,
+            var ex = assertThrows(UnavailableActionError.class,
                     () -> service.canceledBooking(otherUserId, booking1.getId()));
 
             assertEquals("Пользователь с id 99 не может отменить бронь, так как она не принадлежит ему",
@@ -252,7 +252,7 @@ public class BookingServiceImplTest {
             Long userId = 1L;
             String invalidState = "invalid_state";
 
-            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+            UnavailableActionError ex = assertThrows(UnavailableActionError.class,
                     () -> service.getBookingsAllItemsByState(invalidState, userId));
 
             assertEquals("Не существует состояния " + invalidState, ex.getMessage());
@@ -400,7 +400,7 @@ public class BookingServiceImplTest {
             Long userId = 1L;
             String invalidState = "invalid_state";
 
-            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+            UnavailableActionError ex = assertThrows(UnavailableActionError.class,
                     () -> service.getBookingByState(userId, invalidState));
 
             assertEquals("Не существует состояния " + invalidState, ex.getMessage());
@@ -421,7 +421,7 @@ public class BookingServiceImplTest {
             when(itemRepository.findById(item1.getId())).thenReturn(Optional.of(item1));
 
             // act + assert
-            ErrorRequestException ex = assertThrows(ErrorRequestException.class,
+            UnavailableActionError ex = assertThrows(UnavailableActionError.class,
                     () -> service.getBooking(unknownUserId, booking1.getId()));
 
             assertEquals("Пользователь с id 99 не может просматривать информации о бронировании", ex.getMessage());
@@ -477,7 +477,7 @@ public class BookingServiceImplTest {
             Booking alreadyApproved = booking1;
             when(bookingRepository.findById(booking1.getId())).thenReturn(Optional.of(alreadyApproved));
 
-            var ex = assertThrows(ErrorRequestException.class,
+            var ex = assertThrows(UnavailableActionError.class,
                     () -> service.approveBooking(user1.getId(), booking1.getId(), true));
 
             assertEquals("Статус бронирования уже изменен", ex.getMessage());
@@ -491,7 +491,7 @@ public class BookingServiceImplTest {
             when(bookingRepository.findById(waitingBooking.getId())).thenReturn(Optional.of(waitingBooking));
             when(itemRepository.findById(item1.getId())).thenReturn(Optional.of(item1));
 
-            var ex = assertThrows(ErrorRequestException.class,
+            var ex = assertThrows(UnavailableActionError.class,
                     () -> service.approveBooking(wrongUserId, waitingBooking.getId(), true));
 
             assertEquals("Пользователь с id 99 не может редактировать статус этой вещи", ex.getMessage());

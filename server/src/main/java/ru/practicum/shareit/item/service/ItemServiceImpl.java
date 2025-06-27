@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.exception.ErrorRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.UnavailableActionError;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -55,7 +55,7 @@ public class ItemServiceImpl implements ItemService {
         Item oldItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Не удается найти вещь с id " + itemId));;
         if (oldItem.getOwner() == null || !oldItem.getOwner().equals(itemOwner)) {
-            throw new ErrorRequestException("Пользователь с id = " + userId + "не может редактировать эту вещь");
+            throw new UnavailableActionError("Пользователь с id = " + userId + "не может редактировать эту вещь");
         }
 
         if (item.getDescription() != null && !item.getDescription().equals(oldItem.getDescription())) {

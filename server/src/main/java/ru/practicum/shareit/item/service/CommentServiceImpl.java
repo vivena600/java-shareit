@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.exception.ErrorRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.UnavailableActionError;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.user.User;
@@ -50,6 +50,6 @@ public class CommentServiceImpl implements CommentService {
     private Booking checkBooking(Long itemId, Long userId) {
         LocalDateTime now = LocalDateTime.now();
         return bookingRepository.getPostBooking(itemId, userId, now)
-                .orElseThrow(() -> new ErrorRequestException("Нельзя оставить комментарий, если не было брони"));
+                .orElseThrow(() -> new UnavailableActionError("Нельзя оставить комментарий, если не было брони"));
     }
 }
